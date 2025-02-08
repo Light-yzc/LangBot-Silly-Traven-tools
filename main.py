@@ -6,9 +6,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 import time
 
-"""
-在收到私聊或群聊消息"hello"时，回复"hello, <发送者id>!"或"hello, everyone!"
-"""
+
 # 注册插件
 msg_i = ''
 turns = 1
@@ -146,13 +144,13 @@ class HelloPlugin(BasePlugin):
     @handler(PersonNormalMessageReceived)
     async def person_normal_message_received(self, ctx: EventContext):
         msg = ctx.event.text_message  # 这里的 event 即为 PersonNormalMessageReceived 的对象
-        if len(msg) != 0:  # 如果消息为hello
+        if len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
             # 输出调试信息
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
 
-            # 回复消息 "hello, <发送者id>!"
+            # 回复消息 
             ctx.add_return("reply", ['@'+str(ctx.event.sender_id)+'\n'+out_put])
 
             # 阻止该事件默认行为（向接口获取回复）
@@ -162,13 +160,13 @@ class HelloPlugin(BasePlugin):
     @handler(GroupNormalMessageReceived)
     async def group_normal_message_received(self, ctx: EventContext):
         msg = ctx.event.text_message  # 这里的 event 即为 GroupNormalMessageReceived 的对象
-        if len(msg) != 0:  # 如果消息为hello
+        if len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
             # 输出调试信息
             self.ap.logger.debug("ok, {}".format(ctx.event.sender_id))
 
-            # 回复消息 "hello, everyone!"
+            # 回复消息
             ctx.add_return("reply", [out_put])
 
             # 阻止该事件默认行为（向接口获取回复）
