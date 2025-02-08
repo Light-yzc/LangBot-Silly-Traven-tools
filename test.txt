@@ -1,0 +1,164 @@
+# import requests
+# def get_msg():
+#         # url1 = 'http://127.0.0.1:8000/api/characters/all'
+#         url = 'http://127.0.0.1:8000/api/chats/get'
+#         headers = {
+#         "Accept": "*/*",
+#         "Accept-Encoding": "gzip, deflate, br, zstd",
+#         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+#         "Connection": "keep-alive",
+#         "Content-Length": "7",
+#         "Content-Type": "application/json",
+#         "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
+#         "Host": "127.0.0.1:8000",
+#         "Origin": "http://127.0.0.1:8000",
+#         "Sec-Fetch-Dest": "empty",
+#         "Sec-Fetch-Mode": "cors",
+#         "Sec-Fetch-Site": "same-origin",
+#         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+#         "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
+#         "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+#         "sec-ch-ua-mobile": "?0",
+#         "sec-ch-ua-platform": '"Windows"'
+#         }
+#         data = {
+#     "avatar_url": "Frilia.png",
+#     "ch_name": "Frilia",
+#     "file_name": "Frilia - 2025-02-08@14h38m36s"
+# }
+
+#         res = requests.post(url = url, headers = headers,json=data)
+#         print(res)
+#         msg = res.json()[-1]['mes']
+#         print(msg)
+#     #     msg = {
+#     #     'avatar':res.json()[-1]['avatar'],
+#     #     'chat':res.json()[-1]['chat'],
+#     #     'ch_name':res.json()[-1]['name']
+#     # }
+#     #     res1 = requests.post(url = url, headers = headers,json=msg)
+#     #     msg = res1.json()[-1]['mes']
+#     #     print(msg)
+
+
+# get_msg()
+
+# # from selenium import webdriver
+# # from selenium.webdriver.common.action_chains import ActionChains
+# # from selenium.webdriver.common.by import By
+# # import time
+# # def open_broser():
+# #     options = webdriver.EdgeOptions() # 创建一个配置对象
+# #     # options.add_argument("--headless") # 开启无界面模式
+# #     options.add_argument("--disable-gpu")
+# #     options.add_argument("--window-size=1920,1000")
+# #     browser = webdriver.Edge(options=options)
+# #     browser.set_window_size(1920, 1000)
+# #     browser.get("http://127.0.0.1:8000/")
+# #     time.sleep(3)
+# #     element = browser.find_element(By.ID, "rightNavHolder")
+# #     ActionChains(browser).move_to_element(element).click().perform()
+# #     time.sleep(1)
+# #     elm2 =browser.find_element(By.ID,"CharID1")
+# #     ActionChains(browser).move_to_element(elm2).click().perform()
+# #     return browser
+
+
+# # browser = open_broser()
+# # time.sleep(4)
+# # # elm3 = browser.find_element(By.CLASS_NAME,'swipe_right fa-solid fa-chevron-right interactable')
+
+
+# # # ActionChains(browser).move_to_element(elm3).click().perform()
+# # init_msg =  browser.find_element(By.CLASS_NAME,'mes_text')
+# # print(init_msg.text)
+# # # except:
+# # #     init_msg =  browser.find_element(By.CLASS_NAME,'mes_text')
+# # # for em in init_msg:
+# # #     print(em.text)
+# # time.sleep(10)
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+import time
+def open_broser():
+    options = webdriver.EdgeOptions() # 创建一个配置对象
+    # options.add_argument("--headless") # 开启无界面模式
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1000")
+    browser = webdriver.Edge(options=options)
+    browser.set_window_size(1920, 1000)
+    browser.get("http://127.0.0.1:8000/")
+    time.sleep(3)
+    element = browser.find_element(By.ID, "rightNavHolder")
+    ActionChains(browser).move_to_element(element).click().perform()
+    time.sleep(1)
+    elm2 =browser.find_element(By.ID,"CharID1")
+    ActionChains(browser).move_to_element(elm2).click().perform()
+    return browser
+# browser = open_broser()
+def get_date():
+    url = 'http://127.0.0.1:8000/api/characters/all'
+    headers = {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    "Connection": "keep-alive",
+    "Content-Length": "7",
+    "Content-Type": "application/json",
+    "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
+    "Host": "127.0.0.1:8000",
+    "Origin": "http://127.0.0.1:8000",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+    "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
+    "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"'
+    }
+    data = {
+                '':''
+            }
+
+    res = requests.post(url = url, headers = headers,json=data)
+    print(res)
+    msg = {
+        'avatar':res.json()[1]['avatar'],
+        'chat':res.json()[1]['chat'],
+        'ch_name':res.json()[1]['name']
+    }
+    return msg
+
+def get_msg():
+        url = 'http://127.0.0.1:8000/api/chats/get'
+        headers = {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+        "Connection": "keep-alive",
+        "Content-Length": "7",
+        "Content-Type": "application/json",
+        "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
+        "Host": "127.0.0.1:8000",
+        "Origin": "http://127.0.0.1:8000",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+        "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
+        "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"'
+        }
+        data = {'avatar_url': 'Frilia.png', 'file_name': 'Frilia - 2025-02-08@14h38m36s', 'ch_name': 'Frilia'}
+        # data = get_date()
+        res = requests.post(url = url, headers = headers,json=data)
+        print(res)
+        msg = res.json()
+        print(msg) 
+        time.sleep(100)
+
+get_msg()
