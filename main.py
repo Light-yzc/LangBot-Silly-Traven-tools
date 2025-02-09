@@ -13,7 +13,7 @@ turns = 1
 data = {}
 def browser_gen():
     options = webdriver.EdgeOptions() # 创建一个配置对象
-    # options.add_argument("--headless") # 开启无界面模式
+    options.add_argument("--headless") # 开启无界面模式
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1000")
     options.add_experimental_option("detach", True)
@@ -80,7 +80,6 @@ def get_date():
         'ch_name':res.json()[1]['name']
     }
     return msg
-print('test')
 def get_msg():
         global data
         url = 'http://127.0.0.1:8000/api/chats/get'
@@ -112,14 +111,15 @@ def init_chat():
     try:
         xpath_expression = "//div[@class='flex-container swipeRightBlock flexFlowColumn flexNoGap']/div[@class='swipe_right fa-solid fa-chevron-right interactable' and @style='display: flex; opacity: 0.3;' and @tabindex='0']"
         elm1 = browser.find_element(By.XPATH,xpath_expression)
+        ActionChains(browser).move_to_element(elm1).click().perform()
+
     except:
         xpath_expression = "//div[@class='flex-container swipeRightBlock flexFlowColumn flexNoGap']/div[@class='swipe_right fa-solid fa-chevron-right interactable' and @style='display: flex; opacity: 0.7;' and @tabindex='0']"
         elm1 = browser.find_element(By.XPATH,xpath_expression)
-    ActionChains(browser).move_to_element(elm1).click().perform()
+        ActionChains(browser).move_to_element(elm1).click().perform()
     turns = 1
 
     
-print('test')
 
 
 if turns != 1:
@@ -148,7 +148,7 @@ def excut_msg(message):
     msg_i = msg
     # browser.close()
     if i > 50:
-        return msg + '\n当前Api请求过慢，可能因为供应商服务器负载过大'
+        return msg + '\n当前Api请求过慢，可能因为供应商服务器负载过大\n请过一会重新初始化后再次尝试'
     return msg
 
 def format_str(text):
@@ -157,12 +157,9 @@ def format_str(text):
     content = text[start_index:end_index].strip()
     return content
 
-print('test')
-
 @register(name="St", description="ST插件", version="0.1", author="Regenin")
 class HelloPlugin(BasePlugin):
-    global msg_i
-    # 插件加载时触发
+    global msg_i    # 插件加载时触发
     def __init__(self, host: APIHost):
         pass
 
@@ -172,13 +169,12 @@ class HelloPlugin(BasePlugin):
     # 当收到个人消息时触发
     @handler(PersonNormalMessageReceived)
     async def person_normal_message_received(self, ctx: EventContext):
-        print('test_f')
         msg = ctx.event.text_message  # 这里的 event 即为 PersonNormalMessageReceived 的对象
         if msg == '初始化':
             init_chat()
             # 输出调试信息
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
-
+            time.sleep(2)
             # 回复消息 
             ctx.add_return("reply", ['初始化成功'])
 
@@ -201,9 +197,9 @@ class HelloPlugin(BasePlugin):
     async def group_normal_message_received(self, ctx: EventContext):
         msg = ctx.event.text_message  # 这里的 event 即为 GroupNormalMessageReceived 的对象
         if msg == '初始化':
-            del_msg()
+            init_chat()
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
-            ctx.add_return("reply", ['初始化成功'])
+            ctx.add_return("reply", ['初始化成功\n=======================\n@机器人发送任意消息开始发送故事背景信息\n与机器人的对话将从第二次开始'])
             ctx.prevent_default()
         elif len(msg) != 0:  
             content = msg
@@ -212,7 +208,7 @@ class HelloPlugin(BasePlugin):
             self.ap.logger.debug("ok, {}".format(ctx.event.sender_id))
 
             # 回复消息
-            ctx.add_return("reply", [out_put])
+            ctx.add_return("reply", ['推进故事次数:===' + str(turns-1) + '===\n' + out_put])
 
             # 阻止该事件默认行为（向接口获取回复）
             ctx.prevent_default()
