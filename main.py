@@ -13,7 +13,7 @@ turns = 1
 data = {}
 def browser_gen():
     options = webdriver.EdgeOptions() # 创建一个配置对象
-    options.add_argument("--headless") # 开启无界面模式
+    # options.add_argument("--headless") # 开启无界面模式
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1000")
     options.add_experimental_option("detach", True)
@@ -30,6 +30,25 @@ def browser_gen():
     return browser
 
 
+headers = {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    "Connection": "keep-alive",
+    "Content-Length": "7",
+    "Content-Type": "application/json",
+    "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
+    "Host": "127.0.0.1:8000",
+    "Origin": "http://127.0.0.1:8000",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
+    "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
+    "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"'
+}
 browser  = browser_gen()
 # if turns == 1:
 #     global browser
@@ -50,25 +69,7 @@ browser  = browser_gen()
 def get_date():
     global headers,browser
     url = 'http://127.0.0.1:8000/api/characters/all'
-    headers = {
-    "Accept": "*/*",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    "Connection": "keep-alive",
-    "Content-Length": "7",
-    "Content-Type": "application/json",
-    "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
-    "Host": "127.0.0.1:8000",
-    "Origin": "http://127.0.0.1:8000",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-origin",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
-    "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
-    "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"'
-    }
+
     data = {
                 '':''
             }
@@ -150,6 +151,17 @@ def excut_msg(message):
     if i > 50:
         return msg + '\n当前Api请求过慢，可能因为供应商服务器负载过大\n请过一会重新初始化后再次尝试'
     return msg
+msg_to_change_char = 'CharID0  名称：Miki   描述：玉玉女孩，文风比较独特\nCharID1  名称：Saber   描述：解决Saber泛滥的社会问题的Saber\nCharID2  名称：Tiche   描述：抢走你牛至的魔法少女！\nCharID3  名称：丧尸末日系统   描述：看名字你应该知道了把\nCharID4   名称：娘化生物世界   描述：无\nCharID5   名称：末世孤雄RPG   描述：无\n注意切换了角色后均要初始化成功才能开始游玩'
+def change_character(ch_id):
+    global turns
+    element = browser.find_element(By.ID, "rightNavHolder")
+    ActionChains(browser).move_to_element(element).click().perform()
+    time.sleep(1)
+    elm2 = browser.find_element(By.XPATH,"//div[@title='选择/创建角色']")
+    ActionChains(browser).move_to_element(elm2).click().perform()
+    elm2 =browser.find_element(By.ID,ch_id)
+    ActionChains(browser).move_to_element(elm2).click().perform()
+    turns = 2
 
 def format_str(text):
     start_index = text.find("<content>") + len("<content>")
@@ -180,6 +192,21 @@ class HelloPlugin(BasePlugin):
 
             # 阻止该事件默认行为（向接口获取回复）
             ctx.prevent_default()
+        elif msg == '更改角色':
+            self.ap.logger.debug("ok".format(ctx.event.sender_id))
+            ctx.add_return("reply", ['请输入"CharID"+角色ID更改角色。\n目前角色有：\n' + msg_to_change_char])
+            ctx.prevent_default()
+        elif msg[0:6] == "CharID":
+            try:
+                change_character(msg)
+                init_chat()
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.add_return("reply", ['更改成功，若出现乱码请初始化'])
+                ctx.prevent_default()
+            except:
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.add_return("reply", ['错误，可能角色不存在，或请重试'])
+                ctx.prevent_default()
         elif len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
@@ -201,6 +228,22 @@ class HelloPlugin(BasePlugin):
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
             ctx.add_return("reply", ['初始化成功\n=======================\n@机器人发送任意消息开始发送故事背景信息\n与机器人的对话将从第二次开始'])
             ctx.prevent_default()
+        elif msg == '更改角色':
+            self.ap.logger.debug("ok".format(ctx.event.sender_id))
+            ctx.add_return("reply", ['请输入"CharID"+角色ID更改角色。\n目前角色有：\n' + msg_to_change_char])
+            ctx.prevent_default()
+        elif msg[0:6] == "CharID":
+            try:
+                change_character(msg)
+                init_chat()
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.add_return("reply", ['更改成功,若出现乱码请初始化'])
+                ctx.prevent_default()
+            except:
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.add_return("reply", ['错误，可能角色不存在，或请重试'])
+                ctx.prevent_default()
+
         elif len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
