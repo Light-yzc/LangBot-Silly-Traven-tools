@@ -296,11 +296,10 @@ class Tavern_Plugin(BasePlugin):
             content = msg
             out_put = format_str(excut_msg(content))
             if isinstance(out_put, list):
-                out_put[0] = out_put[0].replace('\n', '')
                 for i in range(0, len(out_put)):
+                    out_put[i] = out_put[i].replace('\n', '')
                     out_msg = out_put[i]
-                    if i != 0:
-                        time.sleep(len(out_msg)*0.25)
+                    time.sleep(len(out_msg)*0.25)
                     msg_chain = MessageChain([Plain(out_msg)])
                     await ctx.send_message('person', ctx.event.sender_id, msg_chain)
                 self.ap.logger.debug("ok".format(ctx.event.sender_id))
@@ -362,11 +361,10 @@ class Tavern_Plugin(BasePlugin):
             content = msg
             out_put = format_str(excut_msg(content))
             if isinstance(out_put, list):
-                out_put[0] = out_put[0].replace('\n', '')
                 for i in range(0, len(out_put)):
+                    out_put[i] = out_put[i].replace('\n', '')
                     out_msg = out_put[i]
-                    if i != 1:
-                        time.sleep(len(out_msg)*0.25)
+                    time.sleep(len(out_msg)*0.25)
                     msg_chain = MessageChain([Plain(out_msg)])
                     await ctx.send_message('person', ctx.event.sender_id, msg_chain)
                 self.ap.logger.debug("ok".format(ctx.event.sender_id))
