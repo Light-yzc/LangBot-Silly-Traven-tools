@@ -1,28 +1,31 @@
 from pkg.plugin.context import register, handler, llm_func, BasePlugin, APIHost, EventContext
 from pkg.plugin.events import *  # 导入事件类
+from pkg.platform.types import *
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.service import Service
 import time
-
-
+import re
 char_id = 9
 # 注册插件
 msg_i = ''
 turns = 1
 data = {}
+re_format = '<start>(.*?)</start>'
 def browser_gen():
+    service = Service(r'F:\yzc\IDM\LangBotAPI-20250201)\python\MicrosoftWebDriver.exe')
     options = webdriver.EdgeOptions() # 创建一个配置对象
-    options.add_argument("--headless") # 开启无界面模式
+    # options.add_argument("--headless") # 开启无界面模式
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1000")
     options.add_experimental_option("detach", True)
 
-    browser = webdriver.Edge(options=options)
+    browser = webdriver.Edge(service=service, options=options)
     browser.set_window_size(1920, 1000)
     browser.get("http://127.0.0.1:8000/")
-    time.sleep(60)
+    time.sleep(3)
     element = browser.find_element(By.ID, "rightNavHolder")
     ActionChains(browser).move_to_element(element).click().perform()
     time.sleep(1)
@@ -192,9 +195,9 @@ def excut_msg(message):
     turns += 1
     while msg_i == msg or msg == message:
         i += 1
-        time.sleep(2)
+        time.sleep(0.5)
         msg = get_msg(char_id)
-        if i > 90:
+        if i > 360:
             api_used += 1
             change_api(api_used)
             return '<content>酒馆未响应，可能是因为Api路线问题或者额度没了</content>'
@@ -220,13 +223,18 @@ def change_character(ch_id):
 
 
 def format_str(text):
-    index = text.find('</thinking>')
-    return text[index+11:]
+    # return text
+    global re_format
+    matches = re.findall(re_format, text, re.DOTALL)
+    if len(matches) == 0:
+        return text
+
+    result = []
+    matches[0].find('/')
+    result.extend(matches[0].split('/'))
+    return result
 
 
-
-
-    
 
 element = browser.find_element(By.ID, "ai-config-button")
 ActionChains(browser).move_to_element(element).click().perform()
@@ -244,7 +252,7 @@ class Tavern_Plugin(BasePlugin):
     # 当收到个人消息时触发
     @handler(PersonNormalMessageReceived)
     async def person_normal_message_received(self, ctx: EventContext):
-        global data,char_id,turns,api_used
+        global data,char_id,turns,api_used,re_format
         msg = ctx.event.text_message  # 这里的 event 即为 PersonNormalMessageReceived 的对象
         if msg == '初始化':
             init_chat()
@@ -266,23 +274,10 @@ class Tavern_Plugin(BasePlugin):
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
             ctx.add_return("reply", ['目前Api已经使用了' + str(api_used) + '\n总共Api有' + str(len(api_keys)+1)])
             ctx.prevent_default()
-        elif msg[0:8] == "更改CharID":
-            char_id = int(msg[8:])
-            try:
-                change_character(msg[2:])
-                # init_chat()
-                data = get_date(char_id)
-                turns = 1
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
-                ctx.add_return("reply", ['更改成功，若出现乱码请初始化'])
-                ctx.prevent_default()
-            except:
-                element = browser.find_element(By.ID, "ai-config-button")
-                ActionChains(browser).move_to_element(element).click().perform()
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
-                ctx.add_return("reply", ['错误，可能角色不存在，需要等bot反应过来再次切换角色直到切换成功'])
-                ctx.prevent_default()
-        elif msg[0:6] == "CharID":
+        elif msg[0:6] == "CharID" or msg == '对话模式':
+            if msg == '对话模式':
+                msg = 'CharID16'
+                re_format = '<start>(.*?)</start>'
             char_id = int(msg[6:])
             try:
                 change_character(msg)
@@ -300,23 +295,40 @@ class Tavern_Plugin(BasePlugin):
         elif len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
+            if isinstance(out_put, list):
+                out_put[0] = out_put[0].replace('\n', '')
+                for i in range(0, len(out_put)):
+                    out_msg = out_put[i]
+                    if i != 0:
+                        time.sleep(len(out_msg)*0.25)
+                    msg_chain = MessageChain([Plain(out_msg)])
+                    await ctx.send_message('person', ctx.event.sender_id, msg_chain)
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.prevent_default()
+
+            else:
             # 输出调试信息
-            self.ap.logger.debug("ok".format(ctx.event.sender_id))
-            # 回复消息 
-            ctx.add_return("reply", [out_put])
-            # 阻止该事件默认行为（向接口获取回复）
-            ctx.prevent_default()
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                # 回复消息 
+                ctx.add_return("reply", [out_put])
+                # 阻止该事件默认行为（向接口获取回复）
+                ctx.prevent_default()
 
 
     # 当收到群消息时触发
     @handler(GroupNormalMessageReceived)
     async def group_normal_message_received(self, ctx: EventContext):
-        global data,char_id,turns,api_used
-        msg = ctx.event.text_message  # 这里的 event 即为 GroupNormalMessageReceived 的对象
+        global data,char_id,turns,api_used,re_format
+        msg = ctx.event.text_message  # 这里的 event 即为 PersonNormalMessageReceived 的对象
         if msg == '初始化':
             init_chat()
+            # 输出调试信息
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
-            ctx.add_return("reply", ['初始化成功\n=======================\n@机器人发送任意消息开始发送故事背景信息\n与机器人的对话将从第二次开始'])
+            time.sleep(2)
+            # 回复消息 
+            ctx.add_return("reply", ['初始化成功'])
+
+            # 阻止该事件默认行为（向接口获取回复）
             ctx.prevent_default()
         elif msg == '更改角色':
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
@@ -328,14 +340,17 @@ class Tavern_Plugin(BasePlugin):
             self.ap.logger.debug("ok".format(ctx.event.sender_id))
             ctx.add_return("reply", ['目前Api已经使用了' + str(api_used) + '\n总共Api有' + str(len(api_keys)+1)])
             ctx.prevent_default()
-        elif msg[0:6] == "CharID":
+        elif msg[0:6] == "CharID" or msg == '对话模式':
+            if msg == '对话模式':
+                msg = 'CharID16'
+                re_format = '<start>(.*?)</start>'
             char_id = int(msg[6:])
             try:
                 change_character(msg)
                 init_chat()
                 data = get_date(char_id)
                 self.ap.logger.debug("ok".format(ctx.event.sender_id))
-                ctx.add_return("reply", ['更改成功,若出现乱码请初始化'])
+                ctx.add_return("reply", ['更改成功，若出现乱码请初始化'])
                 ctx.prevent_default()
             except:
                 element = browser.find_element(By.ID, "ai-config-button")
@@ -346,12 +361,24 @@ class Tavern_Plugin(BasePlugin):
         elif len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
-            # 输出调试信息
-            self.ap.logger.debug("ok, {}".format(ctx.event.sender_id))
-            # 回复消息
-            ctx.add_return("reply", ['推进故事次数:===' + str(turns-1) + '===\n' + out_put])
-            # 阻止该事件默认行为（向接口获取回复）
-            ctx.prevent_default()
+            if isinstance(out_put, list):
+                out_put[0] = out_put[0].replace('\n', '')
+                for i in range(0, len(out_put)):
+                    out_msg = out_put[i]
+                    if i != 1:
+                        time.sleep(len(out_msg)*0.25)
+                    msg_chain = MessageChain([Plain(out_msg)])
+                    await ctx.send_message('person', ctx.event.sender_id, msg_chain)
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                ctx.prevent_default()
+
+            else:
+                # 输出调试信息
+                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                # 回复消息 
+                ctx.add_return("reply", [out_put])
+                # 阻止该事件默认行为（向接口获取回复）
+                ctx.prevent_default()
     # 插件卸载时触发
     def __del__(self):
         pass
