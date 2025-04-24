@@ -8,50 +8,51 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service
 import time
 import re
-char_id = 9
+char_id = 1
 # 注册插件
 msg_i = ''
 turns = 1
 data = {}
-re_format = '<start>(.*?)</start>'
+re_format = '<thinking>(.*?)</thinking>'
 def browser_gen():
-    service = Service(r'F:\yzc\IDM\LangBotAPI-20250201)\python\MicrosoftWebDriver.exe')
+    service = Service(r'C:\Users\Administrator\Downloads\edgedriver_win64\msedgedriver.exe')
     options = webdriver.EdgeOptions() # 创建一个配置对象
-    # options.add_argument("--headless") # 开启无界面模式
+    #options.add_argument("--headless") # 开启无界面模式
     options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1000")
+    options.add_argument("--window-size=1920,1000")    
     options.add_experimental_option("detach", True)
+    # browser = webdriver.Edge(service=service, options=options)
 
     browser = webdriver.Edge(service=service, options=options)
     browser.set_window_size(1920, 1000)
     browser.get("http://127.0.0.1:8000/")
-    time.sleep(3)
+    time.sleep(15)
     element = browser.find_element(By.ID, "rightNavHolder")
     ActionChains(browser).move_to_element(element).click().perform()
     time.sleep(1)
-    elm2 =browser.find_element(By.ID,"CharID9")
+    elm2 =browser.find_element(By.ID,"CharID1")
     ActionChains(browser).move_to_element(elm2).click().perform()
     return browser
 
 
 headers = {
     "Accept": "*/*",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
+    # "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
     "Connection": "keep-alive",
-    "Content-Length": "7",
+    "Content-Length": "2",
     "Content-Type": "application/json",
-    "Cookie": "X-CSRF-Token=da785b9567f95bfb0433bab6b12a8223cd31d35c790072eccc14b980a7700a09",
+    "Cookie": "session-912ff25e=eyJjc3JmVG9rZW4iOiJkMmJmMDc5NmM5Y2RlMjVlMTQwNmQ3ODBjZWE5NTg1YzAzYjViNmQ1ZmJjNmFkN2I1Y2NiNWZlZGFjMjdjNTg4In0=; session-912ff25e.sig=x6bY9baJ0CeNb852bwd5GtNNsF4",
     "Host": "127.0.0.1:8000",
     "Origin": "http://127.0.0.1:8000",
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0",
-    "X-CSRF-Token": "061db89ac91586253bdaf53787066c1ed8e7f85e0d231319157bf3985f5801de9f055eb7458c2cd6592d7d44c4d47d4777c6e8b2174b776b6cafe9d6001f6836",
-    "sec-ch-ua": '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"',
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
+    "X-CSRF-Token": "d2bf0796c9cde25e1406d780cea9585c03b5b6d5fbc6ad7b5ccb5fedac27c588",
+    "sec-ch-ua": "\"Microsoft Edge\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"",
     "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"'
+    "sec-ch-ua-platform": "\"Windows\""
 }
 
 
@@ -187,6 +188,8 @@ def excut_msg(message):
         return '------------------初始信息-------（你看到这条消息就意味着你发的消息不管用，要再发一条才算正式开始对话，这条只是对对话背景的补充）\n' + init_msg
     i = 1
     # browser = open_broser()
+    # 如果在send_msg之前get一下会不会好点?
+    msg_i = get_msg(char_id)
     elm3 = browser.find_element(By.ID,'send_textarea')
     elm3.send_keys(message)
     elm4 = browser.find_element(By.ID,'send_but')
@@ -199,12 +202,12 @@ def excut_msg(message):
         msg = get_msg(char_id)
         if i > 360:
             api_used += 1
-            change_api(api_used)
-            return '<content>酒馆未响应，可能是因为Api路线问题或者额度没了</content>'
-    msg_i = msg
+            # change_api(api_used) #是否开启更改API
+            return '酒馆未响应，可能是因为Api路线问题或者额度没了'
+    # msg_i = msg
     # browser.close()
-    if i > 50:
-        return msg + '\n当前Api请求过慢，可能因为供应商服务器负载过大\n请过一会重新初始化后再次尝试'
+    if i > 80:
+        return msg + '\n****当前Api请求过慢，可能因为供应商服务器负载过大\n请过一会重新初始化后再次尝试****'
     return msg
 msg_to_change_char = 'CharID0  名称：两只亡灵少女   描述：无\nCharID1  名称：Freya   描述：雨中坠落的天使…….\nCharID2  名称：Miki   描述：文风比较独特\nCharID3  名称：Saber   描述：解决Saber泛滥的社会问题的Saber\nCharID4  名称：Queen   描述：异.....异形？\nCharID5 名称：Tiche   描述：抢走你牛至的魔法少女！\nCharID6  名称：伊蕾娜   描述：欢迎来到魔女的世界！\nCharID7  名称：呕吐内心的少女   描述：无\nCharID8  名称：娘化生物世界   描述：无\nCharID9  名称：帝国拷问官   描述：无\nCharID10  名称：扫一扫   描述：扫一扫更改数据\nCharID11  名称：末世孤雄RPG   描述：无\nCharID12  砂狼白子   描述：欢迎来到碧蓝档案！\nCharID13  名称：芙蕾雅   描述：雨中坠落的天使…….\nCharID14  名称：虚拟色色体验馆   描述：无\n如果报错请重新切换角色或者初始化'
 
@@ -219,6 +222,7 @@ def change_character(ch_id):
     ActionChains(browser).move_to_element(elm2).click().perform()
     elm2 =browser.find_element(By.ID,ch_id)
     ActionChains(browser).move_to_element(elm2).click().perform()
+    # turns = 1 is the pro?
     turns = 2
 
 
@@ -226,13 +230,9 @@ def format_str(text):
     # return text
     global re_format
     matches = re.findall(re_format, text, re.DOTALL)
-    if len(matches) == 0:
-        return text
-
-    result = []
-    matches[0].find('/')
-    result.extend(matches[0].split('/'))
-    return result
+    # if len(matches) == 0:
+    #     return text
+    return  [s.strip() for s in re.split(r'\s*/\s*', text) if s.strip()]
 
 
 
@@ -276,22 +276,22 @@ class Tavern_Plugin(BasePlugin):
             ctx.prevent_default()
         elif msg[0:6] == "CharID" or msg == '对话模式':
             if msg == '对话模式':
-                msg = 'CharID16'
+                msg = 'CharID0'
                 re_format = '<start>(.*?)</start>'
             char_id = int(msg[6:])
-            try:
-                change_character(msg)
-                init_chat()
-                data = get_date(char_id)
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
-                ctx.add_return("reply", ['更改成功，若出现乱码请初始化'])
-                ctx.prevent_default()
-            except:
-                element = browser.find_element(By.ID, "ai-config-button")
-                ActionChains(browser).move_to_element(element).click().perform()
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
-                ctx.add_return("reply", ['错误，可能角色不存在，需要等bot反应过来再次切换角色直到切换成功'])
-                ctx.prevent_default()
+            # try:
+            change_character(msg)
+            init_chat()
+            data = get_date(char_id)
+            self.ap.logger.debug("ok".format(ctx.event.sender_id))
+            ctx.add_return("reply", ['更改成功，若出现乱码请初始化'])
+            ctx.prevent_default()
+            # except:
+            #     element = browser.find_element(By.ID, "ai-config-button")
+            #     ActionChains(browser).move_to_element(element).click().perform()
+            #     self.ap.logger.debug("ok".format(ctx.event.sender_id))
+            #     ctx.add_return("reply", ['错误，可能角色不存在，需要等bot反应过来再次切换角色直到切换成功'])
+            #     ctx.prevent_default()
         elif len(msg) != 0:  
             content = msg
             out_put = format_str(excut_msg(content))
@@ -299,7 +299,8 @@ class Tavern_Plugin(BasePlugin):
                 for i in range(0, len(out_put)):
                     out_put[i] = out_put[i].replace('\n', '')
                     out_msg = out_put[i]
-                    time.sleep(len(out_msg)*0.25)
+                    if i != 0:
+                        time.sleep(len(out_msg)*0.15)
                     msg_chain = MessageChain([Plain(out_msg)])
                     await ctx.send_message('person', ctx.event.sender_id, msg_chain)
                 self.ap.logger.debug("ok".format(ctx.event.sender_id))
@@ -341,7 +342,7 @@ class Tavern_Plugin(BasePlugin):
             ctx.prevent_default()
         elif msg[0:6] == "CharID" or msg == '对话模式':
             if msg == '对话模式':
-                msg = 'CharID16'
+                msg = 'CharID0'
                 re_format = '<start>(.*?)</start>'
             char_id = int(msg[6:])
             try:
@@ -364,15 +365,17 @@ class Tavern_Plugin(BasePlugin):
                 for i in range(0, len(out_put)):
                     out_put[i] = out_put[i].replace('\n', '')
                     out_msg = out_put[i]
-                    time.sleep(len(out_msg)*0.25)
+                    if i != 0:
+                        time.sleep(len(out_msg)*0.15)
                     msg_chain = MessageChain([Plain(out_msg)])
-                    await ctx.send_message('person', ctx.event.sender_id, msg_chain)
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                    # await ctx.send_message('person', ctx.event.sender_id, msg_chain)
+                    await ctx.send_message('group',ctx.event.launcher_id, msg_chain)
+                self.ap.logger.debug("ok".format(ctx.event.launcher_id))
                 ctx.prevent_default()
 
             else:
                 # 输出调试信息
-                self.ap.logger.debug("ok".format(ctx.event.sender_id))
+                self.ap.logger.debug("ok".format(ctx.event.launcher_id))
                 # 回复消息 
                 ctx.add_return("reply", [out_put])
                 # 阻止该事件默认行为（向接口获取回复）
