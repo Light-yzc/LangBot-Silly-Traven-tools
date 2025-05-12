@@ -57,6 +57,7 @@ headers = {
     "sec-ch-ua": "\"Microsoft Edge\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"",
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": "\"Windows\""
+    "sec-ch-ua-platform": "\"Windows\""
 }
 
 
